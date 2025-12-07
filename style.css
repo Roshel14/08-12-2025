@@ -1,0 +1,84 @@
+
+  body {
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #222;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .lock-screen {
+    text-align: center;
+    color: #fff;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .lock-icon img {
+    width: 150px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-top: 15px;
+    font-weight: 600;
+  }
+
+  p {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-bottom: 20px;
+  }
+
+  .inputs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+  }
+
+  .num-input {
+    width: 70px;
+    padding: 15px;
+    text-align: center;
+    border: none;
+    border-radius: 10px;
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #222;
+    outline: none;
+  }
+
+  .unlock-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    background: #ff6b9d;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+  }
+
+  .unlock-btn:hover {
+    background: #ff4d7d;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  .error-message {
+    color: #ffcccc;
+    margin-top: 10px;
+    font-size: 14px;
+    display: none;
+  }
