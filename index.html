@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Feliz 5 años 💖 </title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-icon">
+    <img src="img/images.png" alt="candado">
+  </div>
+  <h1>Ingresa la fecha que empezo nuestro amor</h1>
+  <p> Dia / Mes / Año</p>
+
+  <div class="inputs">
+    <input type="number" id="dayInput" class="num-input" placeholder="DD" min="1" max="31">
+    <input type="number" id="monthInput" class="num-input" placeholder="MM" min="1" max="12">
+    <input type="number" id="yearInput" class="num-input" placeholder="AAAA" min="1900" max="2100">
+  </div>
+
+  <button class="unlock-btn" id="unlockBtn">Desbloquear ❤️</button>
+  <p class="error-message" id="errorMessage">Fecha incorrecta. Intenta de nuevo.</p>
+</div>
+
+	
+
+
+
+	
+<script>
+document.getElementById('unlockBtn').addEventListener('click', function() {
+  const day = document.getElementById('dayInput').value.padStart(2, '0');
+  const month = document.getElementById('monthInput').value.padStart(2, '0');
+  const year = document.getElementById('yearInput').value;
+
+  const dateInput = `${day}/${month}/${year}`;
+  const correctDate = '08/12/2020'; // ← cambia aquí tu fecha correcta
+
+  if (dateInput === correctDate) {
+    const startDate = `${year}-${month}-${day}`;
+    localStorage.setItem('specialDate', startDate);
+    // Fecha objetivo para abrir sorpresa
+    const targetDate = new Date('2025-12-08T00:00:00');
+    const now = new Date();
+    if (now >= targetDate) {
+      window.location.href = 'nosotros.html';
+    } else {
+      document.getElementById('lockScreen').innerHTML = `
+        <h2>¡Falta tiempo para abrir la sorpresa!</h2>
+        <div id="countdown">
+          <span id="days"></span> días,
+          <span id="hours"></span> horas,
+          <span id="minutes"></span> minutos,
+          <span id="seconds"></span> segundos
+        </div>
+        <p>Vuelve cuando el contador llegue a cero.</p>
+      `;
+      // Contador regresivo
+      function updateCountdown() {
+        const now = new Date();
+        const diff = targetDate - now;
+        if (diff <= 0) {
+          window.location.href = 'nosotros.html';
+          return;
+        }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        document.getElementById('days').textContent = days;
+        document.getElementById('hours').textContent = hours;
+        document.getElementById('minutes').textContent = minutes;
+        document.getElementById('seconds').textContent = seconds;
+      }
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    }
+  } else {
+    const error = document.getElementById('errorMessage');
+    error.style.display = 'block';
+    setTimeout(() => error.style.display = 'none', 2000);
+  }
+});
+
+// Permitir desbloquear con Enter en cualquier input
+['dayInput', 'monthInput', 'yearInput'].forEach(function(id) {
+  document.getElementById(id).addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      document.getElementById('unlockBtn').click();
+    }
+  });
+});
+</script>
+
+</body>
+</html>

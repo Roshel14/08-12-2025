@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Feliz 5 años 💖</title>
+	<link rel="stylesheet" href="stilos.css">
+</head>
+<body>
+        <div class="welcome-message">
+            <h1>Bienvenido a Nuestro Mundo de Recuerdos ❤️</h1>
+            <p>Cada imagen cuenta una historia especial de nuestro amor</p>
+        </div>
+
+		<div class="container">
+			<div class="tarjeta" id="bakugo"><h3>AÑO NUEVO 2022</h3></div>
+            <div class="tarjeta" id="bakugo1"><h3>VERANO 2023</h3></div>
+			<div class="tarjeta" id="deku"><h3>PUELLES 2023</h3></div>
+			<div class="tarjeta" id="todoroki"><h3>ANIVERASARIO-HCO 2025</h3></div>
+			<div class="tarjeta" id="Red_Riot"><h3>LARCOMAR 2022</h3></div>
+            <div class="tarjeta" id="Red_Riot1"><h3>2 DE MAYO 2022</h3></div>
+            <div class="tarjeta" id="Red_Riot2"><h3>PUELLES 2024</h3></div>
+			<div class="tarjeta" id="lemillion"><h3>ALAMEDA BOZE 2025</h3></div>
+			<div class="tarjeta" id="all_might"><h3>PASEO 2025</h3></div>
+			<div class="tarjeta" id="shigaraki"><h3>CENANDO 2025</h3></div>
+            <div class="tarjeta" id="all_for_one"><h3>AÑO NUEVO 2022</h3></div>
+            
+		</div>
+
+        <div class="time-counter">
+            <h2>Tiempo juntos</h2>
+            <div class="counter-container">
+                <div class="counter-box">
+                    <span id="years">0</span>
+                    <p>Años</p>
+                </div>
+                <div class="counter-box">
+                    <span id="months">0</span>
+                    <p>Meses</p>
+                </div>
+                <div class="counter-box">
+                    <span id="weeks">0</span>
+                    <p>Semanas</p>
+                </div>
+                <div class="counter-box">
+                    <span id="days">0</span>
+                    <p>Días</p>
+                </div>
+                <div class="counter-box">
+                    <span id="hours">0</span>
+                    <p>Horas</p>
+                </div>
+                <div class="counter-box">
+                    <span id="minutes">0</span>
+                    <p>Minutos</p>
+                </div>
+                <div class="counter-box">
+                    <span id="seconds">0</span>
+                    <p>Segundos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="letter-container">
+            <button id="openLetterBtn" class="open-letter-btn">
+                💌 Abrir Carta de Amor 💌
+            </button>
+
+            <div class="love-letter hidden">
+                <div class="music-player">
+                    <audio id="bgMusic" loop>
+                        <source src="un-año-official-video.mp3" type="audio/mp3">
+                    </audio>
+                    <div class="music-controls">
+                        <button id="playPauseBtn" class="music-btn">▶️</button>
+                        <button id="stopBtn" class="music-btn">⏹️</button>
+                        <div class="volume-control">
+                            <button id="muteBtn" class="music-btn">🔊</button>
+                            <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+                        </div>
+                        <p class="music-status">♫♫♫♫♫♫</p>
+                    </div>
+                </div>
+                
+                <div class="letter-content">
+                    <h2 class="typewriter">Mi Carta para Ti</h2>
+                    <div class="letter-text">
+                        <p class="typewriter">Mi wanbra te amo mucho</p>
+                        <p class="typewriter">Desde aquel <span id="specialDateText"></span> , el mundo se volvió más brillante. Cada momento contigo es un regalo que atesoro en lo más profundo de mi corazón. Tu sonrisa ilumina mis días, y tu amor me da fuerzas para ser mejor cada día.</p>
+                        <p class="typewriter">El tiempo a tu lado pasa volando, pero cada segundo está lleno de momentos mágicos que construimos juntos. Eres mi compañero/a de vida, mi mejor amigo/a, mi confidente, y el amor de mi vida.</p>
+                        <p class="typewriter">Prometo seguir construyendo recuerdos hermosos contigo, celebrar nuestros logros juntos, y estar a tu lado en los momentos difíciles. Nuestro amor es mi mayor tesoro, y cada día me enamoro más de ti.</p>
+                        <p class="typewriter">Con todo mi amor, de tu Kachero Roger</p>
+                        <p class="typewriter">Tu amor ❤️</p>
+                        <!-- Botón para abrir la ventana Galaxia sin redirigir la página actual -->
+                        <div class="galaxy-btn-container" id="galaxyBtnContainer" style="display:none;">
+                            <button id="openGalaxiaBtn" class="open-galaxia-btn" type="button" title="Abrir Galaxia en nueva ventana">sigue a sorpresa ✨ (dale click)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Mostrar el botón galaxia después de unos segundos
+            window.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    document.getElementById('galaxyBtnContainer').style.display = 'block';
+                }, 30000); // 30 segundos para leer la carta
+            });
+            // Función para el contador
+            function updateCounter() {
+                const savedDate = localStorage.getItem('specialDate');
+                const startDate = new Date(savedDate || '2020-12-08');
+                const now = new Date();
+                const diff = now - startDate;
+
+                const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
+                const months = Math.floor((diff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30.44));
+                const weeks = Math.floor((diff % (1000 * 60 * 60 * 24 * 30.44)) / (1000 * 60 * 60 * 24 * 7));
+                const days = Math.floor((diff % (1000 * 60 * 60 * 24 * 7)) / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('years').textContent = years;
+                document.getElementById('months').textContent = months;
+                document.getElementById('weeks').textContent = weeks;
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+            }
+
+            setInterval(updateCounter, 1000);
+
+            // Formatear la fecha para la carta
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                // Ajustamos la fecha para la zona horaria local
+                const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+                const day = localDate.getDate();
+                const month = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(localDate);
+                const year = localDate.getFullYear();
+                return `${day} de ${month} de ${year}`;
+            }
+
+            // Actualizar la fecha en la carta
+            const savedDate = localStorage.getItem('specialDate');
+            if (savedDate) {
+                document.getElementById('specialDateText').textContent = formatDate(savedDate);
+            }
+
+            // Manejo de la carta y efecto máquina de escribir
+            const openLetterBtn = document.getElementById('openLetterBtn');
+            const loveLetter = document.querySelector('.love-letter');
+            const typewriterElements = document.querySelectorAll('.typewriter');
+            const audio = document.getElementById('bgMusic');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const muteBtn = document.getElementById('muteBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+
+            // Control de reproducción
+            playPauseBtn.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play();
+                    playPauseBtn.textContent = '⏸️';
+                } else {
+                    audio.pause();
+                    playPauseBtn.textContent = '▶️';
+                }
+            });
+
+            // Botón de stop
+            stopBtn.addEventListener('click', () => {
+                audio.pause();
+                audio.currentTime = 0;
+                playPauseBtn.textContent = '▶️';
+            });
+
+            // Control de volumen y mute
+            let lastVolume = 0.5;
+            volumeSlider.addEventListener('input', (e) => {
+                audio.volume = e.target.value;
+                muteBtn.textContent = e.target.value > 0 ? '🔊' : '🔈';
+                lastVolume = e.target.value;
+            });
+
+            muteBtn.addEventListener('click', () => {
+                if (audio.volume > 0) {
+                    lastVolume = audio.volume;
+                    audio.volume = 0;
+                    volumeSlider.value = 0;
+                    muteBtn.textContent = '🔈';
+                } else {
+                    audio.volume = lastVolume;
+                    volumeSlider.value = lastVolume;
+                    muteBtn.textContent = '🔊';
+                }
+            });
+
+            openLetterBtn.addEventListener('click', function() {
+                // Reproducir música
+                audio.play();
+                
+                // Mostrar la carta con animación
+                loveLetter.classList.remove('hidden');
+                setTimeout(() => {
+                    loveLetter.classList.add('visible');
+                    
+                    // Iniciar efecto máquina de escribir
+                    typewriterElements.forEach((element, index) => {
+                        setTimeout(() => {
+                            element.classList.add('typing');
+                        }, index * 3000); // Cada elemento comienza después del anterior
+                    });
+                }, 100);
+
+                // Ocultar el botón
+                this.style.display = 'none';
+            });
+
+            // Función para detener la música al salir de la página
+            window.addEventListener('beforeunload', function() {
+                audio.pause();
+            });
+
+            // Efecto de palabras explosivas
+            const loveWords = [
+                '❤️ Te Amo ❤️',
+                '💖 Mi Vida 💖',
+                '💝 Mi Tesoro 💝',
+                '💕 Mi Amor 💕',
+                '💗 Para Siempre 💗',
+                '💓 Eres Mi Todo 💓',
+                '💘 Mi Corazón 💘',
+                '💝 Mi Universo 💝',
+                '💖 Mi Alegría 💖',
+                '❤️ Mi Felicidad ❤️'
+            ];
+
+            document.addEventListener('click', function(e) {
+                // don't trigger fireworks when preview overlay is open or when clicking inside UI controls
+                const preview = document.getElementById('previewOverlay');
+                if (preview && preview.classList.contains('open')) return;
+                if (e.target.closest('.preview-box') || e.target.closest('.music-controls') || e.target.closest('.open-letter-btn') || e.target.closest('.music-player')) return;
+
+                createWordFirework(e.clientX, e.clientY);
+            });
+
+            function createWordFirework(x, y) {
+                const word = document.createElement('div');
+                word.className = 'firework-word';
+                word.textContent = loveWords[Math.floor(Math.random() * loveWords.length)];
+                
+                // Posicionar la palabra donde se hizo clic
+                word.style.left = x + 'px';
+                word.style.top = y + 'px';
+                
+                // Crear elementos de estela
+                const trail = document.createElement('div');
+                trail.className = 'word-trail';
+                document.body.appendChild(trail);
+                
+                document.body.appendChild(word);
+
+                // Crear partículas de brillo
+                for(let i = 0; i < 10; i++) {
+                    createSparkle(x, y);
+                }
+
+                // Animación de movimiento con estela
+                let angle = Math.random() * Math.PI * 2;
+                let distance = 150;
+                let startX = x;
+                let startY = y;
+                let trailPoints = [];
+
+                const animate = () => {
+                    startX += Math.cos(angle) * 2;
+                    startY += Math.sin(angle) * 2;
+                    
+                    word.style.left = startX + 'px';
+                    word.style.top = startY + 'px';
+
+                    // Agregar punto a la estela
+                    trailPoints.push({ x: startX, y: startY });
+                    if (trailPoints.length > 20) {
+                        trailPoints.shift();
+                    }
+
+                    // Dibujar estela
+                    let trailHTML = '';
+                    trailPoints.forEach((point, index) => {
+                        const opacity = index / trailPoints.length;
+                        trailHTML += `<div class="trail-point" style="left:${point.x}px; top:${point.y}px; opacity:${opacity}"></div>`;
+                    });
+                    trail.innerHTML = trailHTML;
+
+                    distance--;
+                    if (distance > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        word.remove();
+                        trail.remove();
+                    }
+                };
+
+                animate();
+            }
+
+            function createSparkle(x, y) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                
+                // Posición inicial
+                sparkle.style.left = x + 'px';
+                sparkle.style.top = y + 'px';
+                
+                // Dirección aleatoria
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 100;
+                const duration = 500 + Math.random() * 500;
+                
+                document.body.appendChild(sparkle);
+                
+                // Animación de movimiento
+                sparkle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { 
+                        transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`,
+                        opacity: 0 
+                    }
+                ], {
+                    duration: duration,
+                    easing: 'cubic-bezier(0,0,0.2,1)'
+                });
+                
+                // Eliminar el brillo después de la animación
+                setTimeout(() => {
+                    sparkle.remove();
+                }, duration);
+            }
+            // --- Preview overlay for tarjeta (click to enlarge) ---
+            (function setupPreviewOverlay(){
+                const overlay = document.createElement('div');
+                overlay.id = 'previewOverlay';
+                overlay.className = 'preview-overlay';
+                overlay.innerHTML = `
+                    <div class="preview-backdrop" id="previewBackdrop"></div>
+                    <div class="preview-box" role="dialog" aria-modal="true">
+                        <button class="preview-close" id="previewClose">✕</button>
+                        <div class="preview-content" id="previewContent"></div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                function openPreviewFrom(el) {
+                    const content = document.getElementById('previewContent');
+                    const style = getComputedStyle(el);
+                    const bg = style.backgroundImage;
+                    if (bg && bg !== 'none') {
+                        content.style.backgroundImage = bg;
+                        content.style.backgroundSize = 'cover';
+                        content.style.backgroundPosition = 'center';
+                        content.innerHTML = '';
+                    } else {
+                        content.style.backgroundImage = 'none';
+                        content.innerHTML = el.innerHTML;
+                    }
+                    overlay.classList.add('open');
+                    document.body.classList.add('no-scroll');
+                }
+
+                function closePreview() {
+                    overlay.classList.remove('open');
+                    document.body.classList.remove('no-scroll');
+                }
+
+                // Attach clicks to tarjetas and stop propagation to avoid global click handlers
+                document.querySelectorAll('.tarjeta').forEach(t => {
+                    t.addEventListener('click', function(e){
+                        e.stopPropagation();
+                        openPreviewFrom(this);
+                    });
+                });
+
+                // Close handlers
+                document.getElementById('previewClose').addEventListener('click', closePreview);
+                document.getElementById('previewBackdrop').addEventListener('click', closePreview);
+                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePreview(); });
+            })();
+
+            // Manejo del botón Galaxia (navegar en la misma ventana)
+            (function setupGalaxiaButton(){
+                const btn = document.getElementById('openGalaxiaBtn');
+                if (!btn) return;
+                btn.addEventListener('click', function(){
+                    // Navegar en la misma ventana a galaxia.html
+                    window.location.href = 'galaxia.html';
+                });
+            })();
+
+            // --- Contador de aniversario (próximo 8 de diciembre) ---
+            (function anniversaryCounter(){
+                // Fecha de inicio (aniversario base)
+                const startDate = new Date('2020-12-08T00:00:00');
+
+                // Crear el bloque en DOM debajo de time-counter
+                const timeCounterEl = document.querySelector('.time-counter');
+                if (timeCounterEl) {
+                    const anniversarySection = document.createElement('div');
+                    anniversarySection.className = 'anniversary-counter';
+                    anniversarySection.innerHTML = `
+                        <h3>Próximo aniversario (8 de diciembre)</h3>
+                        <div class="ann-counter-boxes">
+                            <div class="ann-box"><span id="ann-days">0</span><p>Días</p></div>
+                            <div class="ann-box"><span id="ann-hours">0</span><p>Horas</p></div>
+                            <div class="ann-box"><span id="ann-minutes">0</span><p>Minutos</p></div>
+                            <div class="ann-box"><span id="ann-seconds">0</span><p>Segundos</p></div>
+                        </div>
+                        <p class="ann-note">Nota: El 8 de diciembre es una fecha especial desde el inicio <strong>${formatDate(startDate.toISOString())}</strong>.</p>
+                    `;
+                    timeCounterEl.insertAdjacentElement('afterend', anniversarySection);
+                }
+
+                // Función que calcula la próxima fecha de aniversario (8 de diciembre) a partir de hoy
+                function getNextAnniversary() {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    // Mes en Date es 0-indexed: diciembre = 11
+                    let candidate = new Date(year, 11, 8, 0, 0, 0, 0);
+                    if (candidate <= now) {
+                        candidate = new Date(year + 1, 11, 8, 0, 0, 0, 0);
+                    }
+                    return candidate;
+                }
+
+                function updateAnniversary() {
+                    const next = getNextAnniversary();
+                    const now = new Date();
+                    let diff = next - now;
+                    if (diff < 0) diff = 0;
+
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    const elDays = document.getElementById('ann-days');
+                    const elHours = document.getElementById('ann-hours');
+                    const elMinutes = document.getElementById('ann-minutes');
+                    const elSeconds = document.getElementById('ann-seconds');
+
+                    if (elDays) elDays.textContent = days;
+                    if (elHours) elHours.textContent = String(hours).padStart(2, '0');
+                    if (elMinutes) elMinutes.textContent = String(minutes).padStart(2, '0');
+                    if (elSeconds) elSeconds.textContent = String(seconds).padStart(2, '0');
+
+                    // También podemos mostrar cuantos meses faltan desde la fecha de inicio si se desea
+                }
+
+                // Iniciar actualización cada segundo
+                updateAnniversary();
+                setInterval(updateAnniversary, 1000);
+            })();
+
+        </script>
+
+</body>
+</html>

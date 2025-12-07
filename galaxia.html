@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Laberinto de amor</title>
+    <style>
+        :root{ --bg:#071124; --panel:#0f2540; --accent:#7bd1ff; --player:#ffdf6b }
+        html,body{height:100%;margin:0;font-family:system-ui,'Segoe UI',Segoe,Arial;color:#eaf6ff;background:radial-gradient(ellipse at 10% 10%, #062033 0%, #041022 40%, #000814 100%);}
+        .wrap{max-width:1100px;margin:18px auto;padding:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,0.6)}
+        header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+        h1{font-size:1.2rem;margin:0;color:var(--accent)}
+        .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        button{background:linear-gradient(90deg,#3b82f6,#9b5cf6);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+        button.small{padding:6px 8px;font-size:0.9rem}
+        .info{color:#cfefff;font-size:0.9rem}
+        .canvas-wrap{display:flex;gap:18px;align-items:flex-start}
+        #mazeCanvas{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:8px;display:block;max-width:100%;height:auto}
+        .sidebar{min-width:220px;color:#dff4ff}
+        .status{margin-top:8px}
+        .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:999;visibility:hidden;opacity:0;transition:opacity .2s}
+        .overlay.visible{visibility:visible;opacity:1}
+        .winbox{background:#071a2a;padding:18px;border-radius:10px;color:var(--accent);text-align:center;min-width:260px}
+
+        /* botón flotante de música */
+        #music-btn{
+            position:fixed;right:18px;bottom:18px;z-index:1000;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--accent);padding:10px;border-radius:50%;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 8px 22px rgba(0,0,0,0.45);
+        }
+        #music-btn:hover{transform:scale(1.04)}
+
+        /* Responsive: en pantallas pequeñas apilar canvas y sidebar, y mostrar controles táctiles */
+        .dpad{display:none}
+        @media (max-width: 768px){
+            .canvas-wrap{flex-direction:column}
+            .sidebar{min-width:unset;margin-top:12px}
+            .dpad{display:flex;gap:8px;justify-content:center;margin-top:10px}
+            .dpad button{width:54px;height:54px;border-radius:10px;font-size:1.1rem}
+            header{flex-direction:column;align-items:flex-start}
+            .controls{width:100%;justify-content:space-between}
+        }
+    </style>
+</head>
+<body>
+  
+    <div class="wrap">
+        <header>
+            <h1>Laberinto de Amor</h1>
+              <h2>que la llave llegue hasta el corazon</h2>
+            <div class="controls">
+                <div class="info">Mover: flechas o WASD &nbsp;•&nbsp; Objetivo: llegar a la esquina del corazon</div>
+                <button id="newMazeBtn" class="small">Nuevo laberinto</button>
+                <button id="sizeBtn" class="small">Tamaño: 20×15</button>
+            </div>
+        </header>
+
+        <div class="canvas-wrap">
+            <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+                <canvas id="mazeCanvas"></canvas>
+                <!-- D-pad para móviles -->
+                <div class="dpad" id="dpad">
+                    <button id="dpad-up">▲</button>
+                </div>
+                <div class="dpad" style="margin-top:6px;">
+                    <button id="dpad-left">◀</button>
+                    <button id="dpad-down">▼</button>
+                    <button id="dpad-right">▶</button>
+                </div>
+            </div>
+            <aside class="sidebar">
+                <div><strong>Estado</strong></div>
+                <div class="status"><span id="statusText">Generando...</span></div>
+                <div style="margin-top:12px"><strong>Controles</strong>
+                    <ul>
+                        <li>Flechas / WASD: mover</li>
+                        <li>Nuevo laberinto: genera otro</li>
+                    </ul>
+                </div>
+                <div style="margin-top:12px"><button id="solveBtn">Mostrar solución</button></div>
+            </aside>
+        </div>
+    </div>
+
+    <div id="winOverlay" class="overlay"><div class="winbox"><h2>¡Felicidades!</h2><p>Has llegado al objetivo de la galaxia ✨</p><button id="playAgain">Jugar de nuevo</button></div></div>
+
+    <!-- Background music: coloca un archivo MP3 en ./audio/galaxia-bg.mp3 o cambia el src abajo 
+    <audio id="bgMusic" src="Bad Bunny - DtMF (Letra).mp3" loop preload="auto"></audio>
+    <button id="music-btn" aria-label="Reproducir/pausar música">🔈</button>-->
+
+    <script>
+
+        // Laberinto por algoritmo backtracker (iterativo)
+        const canvas = document.getElementById('mazeCanvas');
+        const ctx = canvas.getContext('2d');
+        let cols = 20, rows = 15; // default
+        let grid = [];
+        let stack = [];
+        let player = {x:0,y:0};
+        let goal = {x: cols-1, y: rows-1};
+        let cellW, cellH;
+                // íconos (SVG) para jugador (llave) y meta (corazón)
+                const keyImg = new Image();
+                const heartImg = new Image();
+                let iconsLoaded = { key: false, heart: false };
+
+                        // Load icons from local files in ./img/
+                        keyImg.onload = () => { iconsLoaded.key = true; draw(); };
+                        heartImg.onload = () => { iconsLoaded.heart = true; draw(); };
+                        keyImg.src = 'img/clave.png';
+                        heartImg.src = 'img/heart.svg';
+
+        // Redimensionar canvas según ancho disponible y mantener celdas cuadradas
+        function resizeCanvas(){
+            const wrap = document.querySelector('.canvas-wrap');
+            // ancho disponible para la porción del canvas
+            let available = wrap.clientWidth;
+            // si layout es fila y existe sidebar, restar su ancho
+            const style = window.getComputedStyle(wrap);
+            if(style.flexDirection && style.flexDirection.startsWith('row')){
+                const sidebar = document.querySelector('.sidebar');
+                if(sidebar) available -= (sidebar.clientWidth + 18);
+            }
+            // limitar ancho mínimo y máximo
+            available = Math.max(200, available);
+            const maxCell = 48; // tamaño máximo por celda
+            const cell = Math.max(12, Math.floor(available / cols));
+            const cellSize = Math.min(cell, maxCell);
+            canvas.width = cols * cellSize;
+            canvas.height = rows * cellSize;
+            canvas.style.width = canvas.width + 'px';
+            canvas.style.height = canvas.height + 'px';
+            cellW = cellSize; cellH = cellSize;
+        }
+
+        function makeGrid(){
+            grid = [];
+            for(let y=0;y<rows;y++){
+                const row = [];
+                for(let x=0;x<cols;x++){
+                    row.push({x,y,visited:false,walls:[true,true,true,true]}); // top,right,bottom,left
+                }
+                grid.push(row);
+            }
+        }
+
+        function idx(x,y){
+            if(x<0||y<0||x>=cols||y>=rows) return null;
+            return grid[y][x];
+        }
+
+        function neighbors(cell){
+            const n = [];
+            const top = idx(cell.x, cell.y-1);
+            const right = idx(cell.x+1, cell.y);
+            const bottom = idx(cell.x, cell.y+1);
+            const left = idx(cell.x-1, cell.y);
+            if(top && !top.visited) n.push({c:top,d:0});
+            if(right && !right.visited) n.push({c:right,d:1});
+            if(bottom && !bottom.visited) n.push({c:bottom,d:2});
+            if(left && !left.visited) n.push({c:left,d:3});
+            return n;
+        }
+
+        function removeWalls(a,b,d){
+            // d is direction from a to b: 0 top,1 right,2 bottom,3 left
+            a.walls[d] = false;
+            b.walls[(d+2)%4] = false;
+        }
+
+        function generateMaze(){
+            makeGrid();
+            const start = grid[0][0];
+            start.visited = true;
+            stack = [start];
+            while(stack.length){
+                const current = stack[stack.length-1];
+                const n = neighbors(current);
+                if(n.length>0){
+                    const pick = n[Math.floor(Math.random()*n.length)];
+                    pick.c.visited = true;
+                    removeWalls(current,pick.c,pick.d);
+                    stack.push(pick.c);
+                } else {
+                    stack.pop();
+                }
+            }
+            player = {x:0,y:0};
+            goal = {x:cols-1,y:rows-1};
+            document.getElementById('statusText').textContent = 'Listo. ¡A jugar!';
+            resizeCanvas();
+            draw();
+        }
+
+        function draw(){
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#001827';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            // draw cells
+            ctx.strokeStyle = '#4fb8ff';
+            ctx.lineWidth = Math.max(1, Math.floor(cellW*0.06));
+            for(let y=0;y<rows;y++){
+                for(let x=0;x<cols;x++){
+                    const c = grid[y][x];
+                    const px = x*cellW; const py = y*cellH;
+                    // walls: top,right,bottom,left
+                    ctx.beginPath();
+                    if(c.walls[0]){ ctx.moveTo(px,py); ctx.lineTo(px+cellW,py); }
+                    if(c.walls[1]){ ctx.moveTo(px+cellW,py); ctx.lineTo(px+cellW,py+cellH); }
+                    if(c.walls[2]){ ctx.moveTo(px+cellW,py+cellH); ctx.lineTo(px,py+cellH); }
+                    if(c.walls[3]){ ctx.moveTo(px,py+cellH); ctx.lineTo(px,py); }
+                    ctx.stroke();
+                }
+            }
+            // draw goal (corazón) - usar imagen si está cargada, sino fallback rect
+            const goalX = goal.x*cellW + cellW*0.18;
+            const goalY = goal.y*cellH + cellH*0.18;
+            const gw = cellW*0.64;
+            const gh = cellH*0.64;
+            if (iconsLoaded.heart) {
+                ctx.drawImage(heartImg, goalX, goalY, gw, gh);
+            } else {
+                ctx.fillStyle = '#9af7a6';
+                ctx.fillRect(goalX, goalY, gw, gh);
+            }
+
+            // draw player (llave) - usar imagen si está cargada, sino fallback círculo
+            const px = player.x*cellW + cellW/2 - (cellW*0.32);
+            const py = player.y*cellH + cellH/2 - (cellH*0.32);
+            const pw = cellW*0.64;
+            const ph = cellH*0.64;
+            if (iconsLoaded.key) {
+                ctx.drawImage(keyImg, px, py, pw, ph);
+            } else {
+                ctx.fillStyle = '#ffd56b';
+                const cx = player.x*cellW + cellW/2;
+                const cy = player.y*cellH + cellH/2;
+                const r = Math.min(cellW,cellH)*0.28;
+                ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+            }
+        }
+
+        function tryMove(dx,dy){
+            const x = player.x; const y = player.y;
+            const cell = idx(x,y);
+            if(!cell) return;
+            // determine direction
+            if(dx===0 && dy===-1){ // up
+                if(!cell.walls[0]) player.y -=1;
+            } else if(dx===1 && dy===0){ // right
+                if(!cell.walls[1]) player.x +=1;
+            } else if(dx===0 && dy===1){ // down
+                if(!cell.walls[2]) player.y +=1;
+            } else if(dx===-1 && dy===0){ // left
+                if(!cell.walls[3]) player.x -=1;
+            }
+            draw();
+            checkWin();
+        }
+
+        function checkWin(){
+            if(player.x===goal.x && player.y===goal.y){
+                // Mostrar overlay de victoria
+                document.getElementById('winOverlay').classList.add('visible');
+                // Después de un pequeño retraso, navegar a teamo.html
+                setTimeout(() => {
+                    window.location.href = 'teamo.html';
+                }, 700);
+            }
+        }
+
+        // keyboard
+        window.addEventListener('keydown', (e)=>{
+            const key = e.key;
+            if(['ArrowUp','w','W'].includes(key)){ e.preventDefault(); tryMove(0,-1); }
+            if(['ArrowDown','s','S'].includes(key)){ e.preventDefault(); tryMove(0,1); }
+            if(['ArrowLeft','a','A'].includes(key)){ e.preventDefault(); tryMove(-1,0); }
+            if(['ArrowRight','d','D'].includes(key)){ e.preventDefault(); tryMove(1,0); }
+        });
+
+        // Touch / D-pad controls (mobile)
+        function hookupDpad(){
+            const up = document.getElementById('dpad-up');
+            const down = document.getElementById('dpad-down');
+            const left = document.getElementById('dpad-left');
+            const right = document.getElementById('dpad-right');
+            if(up) up.addEventListener('click', ()=> tryMove(0,-1));
+            if(down) down.addEventListener('click', ()=> tryMove(0,1));
+            if(left) left.addEventListener('click', ()=> tryMove(-1,0));
+            if(right) right.addEventListener('click', ()=> tryMove(1,0));
+        }
+
+    // UI
+        document.getElementById('newMazeBtn').addEventListener('click', ()=>{ generateMaze(); });
+        document.getElementById('playAgain').addEventListener('click', ()=>{ document.getElementById('winOverlay').classList.remove('visible'); generateMaze(); });
+        document.getElementById('sizeBtn').addEventListener('click', ()=>{
+            // rotate among few presets
+            const presets = [[20,15],[30,20],[16,12]];
+            const cur = presets.findIndex(p=>p[0]===cols && p[1]===rows);
+            const next = presets[(cur+1)%presets.length];
+            cols = next[0]; rows = next[1];
+            document.getElementById('sizeBtn').textContent = `Tamaño: ${cols}×${rows}`;
+            resizeCanvas(); generateMaze();
+        });
+
+        document.getElementById('solveBtn').addEventListener('click', ()=>{
+            // simple BFS to find path and draw it
+            const visited = new Set();
+            const q = [{x:0,y:0,prev:null}];
+            let found = null;
+            while(q.length){
+                const u = q.shift();
+                const key = `${u.x},${u.y}`;
+                if(visited.has(key)) continue;
+                visited.add(key);
+                if(u.x===goal.x && u.y===goal.y){ found = u; break; }
+                const c = idx(u.x,u.y);
+                const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
+                for(let i=0;i<4;i++){
+                    if(!c.walls[i]){
+                        const nx = u.x + dirs[i][0]; const ny = u.y + dirs[i][1];
+                        if(!visited.has(`${nx},${ny}`)) q.push({x:nx,y:ny,prev:u});
+                    }
+                }
+            }
+            if(found){
+                const path = [];
+                let cur = found; while(cur){ path.push({x:cur.x,y:cur.y}); cur = cur.prev; }
+                // draw path overlay
+                draw();
+                ctx.strokeStyle = '#ff99cc'; ctx.lineWidth = Math.max(2, cellW*0.12); ctx.beginPath();
+                for(let i=path.length-1;i>=0;i--){
+                    const p = path[i]; const cx = p.x*cellW + cellW/2; const cy = p.y*cellH + cellH/2;
+                    if(i===path.length-1) ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
+                }
+                ctx.stroke();
+            }
+        });
+
+        // init
+        resizeCanvas();
+        hookupDpad();
+        generateMaze();
+        // handle window resize to remain responsive
+        window.addEventListener('resize', ()=>{ resizeCanvas(); draw(); });
+
+        // --- Música de fondo ---
+        const bgMusic = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('music-btn');
+        let musicInitialized = false;
+
+        // Intentar reproducir (muchos navegadores bloquean autoplay con sonido). Reproducir en silencio primero.
+        function initMusicAuto() {
+            if(musicInitialized) return;
+            musicInitialized = true;
+            try {
+                bgMusic.muted = true;
+                bgMusic.play().then(()=>{
+                    // intento exitoso en modo mute
+                    // mostrar estado en el botón
+                    musicBtn.textContent = '🔈';
+                }).catch(()=>{
+                    // no se pudo reproducir automáticamente
+                    musicBtn.textContent = '🔇';
+                });
+            } catch(e){
+                // ignore
+            }
+        }
+
+        // Llamar a init al primer gesto del usuario (para permitir reproducción con sonido)
+        function enableMusicWithSound(){
+            try {
+                bgMusic.muted = false;
+                const p = bgMusic.play();
+                if(p && p.catch){ p.catch(()=>{/* bloqueo aún */}); }
+                musicBtn.textContent = '🔊';
+            } catch(e){
+                // fallback
+                musicBtn.textContent = '🔇';
+            }
+            // remover listeners de primer gesto
+            document.removeEventListener('click', enableMusicWithSound);
+            document.removeEventListener('touchstart', enableMusicWithSound);
+        }
+
+        // toggle play/pause via botón
+        musicBtn.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            if(bgMusic.paused){
+                // si está pausado, intentar play (si está muteado, quitar mute)
+                bgMusic.muted = false;
+                bgMusic.play().then(()=>{ musicBtn.textContent = '🔊'; }).catch(()=>{ musicBtn.textContent = '🔇'; });
+            } else {
+                bgMusic.pause();
+                musicBtn.textContent = '🔈';
+            }
+        });
+
+        // inicializar intento automático y escuchar primer gesto del usuario
+        initMusicAuto();
+        document.addEventListener('click', enableMusicWithSound, { once: true });
+        document.addEventListener('touchstart', enableMusicWithSound, { once: true });
+    </script>
+</body>
+</html>
+
+
+
+
+
